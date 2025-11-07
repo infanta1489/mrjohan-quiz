@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mr. Johan's Quizzzzz Time</title>
+
+  <!-- Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <!-- Fun Gen Z style font -->
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px 10px;
+      min-height: 100vh;
+      /* Chalkboard style background */
+      background:
+        radial-gradient(circle at 0% 0%, #355835 0, transparent 50%),
+        radial-gradient(circle at 100% 0%, #2d5a2d 0, transparent 50%),
+        radial-gradient(circle at 0% 100%, #234023 0, transparent 50%),
+        radial-gradient(circle at 100% 100%, #1c331c 0, transparent 50%),
+        #152415;
+      color: #f7f7f7;
+      box-sizing: border-box;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .school-logo {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      border-radius: 12px;
+      background: #ffffff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+      padding: 6px;
+    }
+
+    .title-block {
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      margin-bottom: 4px;
+      font-family: 'Comic Neue', cursive;
+      font-size: 42px;
+      background: linear-gradient(90deg, #ffeb3b, #ff9800, #ff5722);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 2px;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+    }
+
+    .meta {
+      font-size: 14px;
+      color: #f1f1f1;
+      font-weight: 500;
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .team-card {
+      background: rgba(255, 255, 255, 0.98);
+      color: #222;
+      border-radius: 16px;
+      padding: 16px 14px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      width: 310px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .team-card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55);
+    }
+
+    .team-inner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .team-name {
+      font-family: 'Comic Neue', cursive;
+      font-size: 26px;
+      margin-bottom: 6px;
+      color: #333;
+      text-align: center;
+    }
+
+    .emoji {
+      margin: 2px 0 6px 0;
+      min-height: 80px;
+      text-align: center;
+    }
+
+    .avatar-img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      background: #fff;
+    }
+
+    .team-main {
+      flex: 1;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: transform 0.1s, box-shadow 0.1s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    button:active {
+      transform: scale(0.96);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    }
+
+    .correct-btn { background-color: #4caf50; color: white; }
+    .wrong-btn   { background-color: #f44336; color: white; }
+    .undo-btn    { background-color: #ff9800; color: white; }
+
+    .counts {
+      font-size: 13px;
+      color: #333;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    /* Vertical side bars on each side */
+    .side-bar-column {
+      width: 12px;
+      height: 130px;
+      border-radius: 999px;
+      background: #eee;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+    }
+
+    .side-bar {
+      width: 100%;
+      height: 0;
+      transition: height 0.3s ease;
+    }
+
+    .correct-bar { background-color: #4caf50; }
+    .wrong-bar   { background-color: #f44336; }
+
+    /* Totals + reset in the middle */
+    .totals {
+      text-align: center;
+      margin: 18px auto 4px;
+      font-size: 15px;
+      color: #f7f7f7;
+      font-weight: 600;
+    }
+
+    .controls-center {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .reset-btn {
+      background-color: #607d8b;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* Big bottom question area */
+    .qa-big-card {
+      background: rgba(255, 255, 255, 0.98);
+      color: #222;
+      border-radius: 16px;
+      padding: 16px 20px 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      max-width: 900px;
+      margin: 10px auto 10px auto;
+    }
+
+    .qa-header {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #666;
+      margin-bottom: 6px;
+    }
+
+    .question-text {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .options-container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .option-btn {
+      text-align: left;
+      background-color: #f1f1f1;
+      color: #222;
+      border-radius: 8px;
+      border: 2px solid transparent;
+      padding: 6px 10px;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+      transition: background-color 0.15s, border-color 0.15s, transform 0.1s;
+    }
+
+    .option-btn:hover {
+      background-color: #e7e7e7;
+    }
+
+    .option-btn.selected {
+      background-color: #d1e8ff;
+      border-color: #3f51b5;
+      transform: scale(1.01);
+    }
+
+    .option-label {
+      font-weight: 700;
+      margin-right: 4px;
+    }
+
+    .qa-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 6px;
+    }
+
+    .next-btn {
+      background-color: #3f51b5;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    @media (max-width:600px){
+      .team-card { width: 100%; }
+      h1 { font-size: 34px; }
+      .qa-big-card { padding: 14px; }
+      .team-inner { gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <!-- Replace src if your logo has a different file name -->
+    <img src="logo.jpeg" alt="Pringle Creek Public School Logo" class="school-logo" />
+    <div class="title-block">
+      <h1>Mr. Johan's Quizzzzz Time</h1>
+      <div class="meta">
+        Pringle Creek Public School, Whitby • Grade 5 Gifted • Miss Howes
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Team 6 -->
+    <div class="team-card">
+      <div class="team-inner">
+        <div class="side-bar-column">
+          <div id="team6-correct-bar" class="side-bar correct-bar"></div>
+        </div>
+
+        <div class="team-main">
+          <div class="team-name">6</div>
+          <div class="emoji">
+            <img
+              id="team6-emoji"
+              class="avatar-img"
+              src="teacher-happy.jpg"
+              alt="Teacher reaction for team 6"
+            />
+          </div>
+          <div class="buttons">
+            <button class="correct-btn" onclick="recordAnswer('team6', true)">Correct</button>
+            <button class="wrong-btn"   onclick="recordAnswer('team6', false)">Wrong</button>
+            <button class="undo-btn"    onclick="undoLast('team6')">Undo</button>
+          </div>
+          <div class="counts">
+            Correct: <span id="team6-correct">0</span> |
+            Wrong: <span id="team6-wrong">0</span>
+          </div>
+        </div>
+
+        <div class="side-bar-column">
+          <div id="team6-wrong-bar" class="side-bar wrong-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Team 7 -->
+    <div class="team-card">
+      <div class="team-inner">
+        <div class="side-bar-column">
+          <div id="team7-correct-bar" class="side-bar correct-bar"></div>
+        </div>
+
+        <div class="team-main">
+          <div class="team-name">7</div>
+          <div class="emoji">
+            <img
+              id="team7-emoji"
+              class="avatar-img"
+              src="teacher-happy.jpg"
+              alt="Teacher reaction for team 7"
+            />
+          </div>
+          <div class="buttons">
+            <button class="correct-btn" onclick="recordAnswer('team7', true)">Correct</button>
+            <button class="wrong-btn"   onclick="recordAnswer('team7', false)">Wrong</button>
+            <button class="undo-btn"    onclick="undoLast('team7')">Undo</button>
+          </div>
+          <div class="counts">
+            Correct: <span id="team7-correct">0</span> |
+            Wrong: <span id="team7-wrong">0</span>
+          </div>
+        </div>
+
+        <div class="side-bar-column">
+          <div id="team7-wrong-bar" class="side-bar wrong-bar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Totals + reset in the middle -->
+  <div class="totals" id="totals-display">
+    Total correct so far – 6: 0 | 7: 0 (Tied)
+  </div>
+  <div class="controls-center">
+    <button class="reset-btn" onclick="resetScoreboard()">Reset All</button>
+  </div>
+
+  <!-- Big bottom question area -->
+  <div class="qa-big-card">
+    <div class="qa-header">
+      Current Question
+    </div>
+    <div id="question-text" class="question-text"></div>
+    <div id="options-container" class="options-container"></div>
+    <div class="qa-footer">
+      <button class="next-btn" onclick="nextQuestion()">Next Question ▶</button>
+    </div>
+  </div>
+
+  <!-- Sounds -->
+  <audio id="clap-sound"  src="clap.mp3"  preload="auto"></audio>
+  <audio id="wrong-sound" src="wrong.mp3" preload="auto"></audio>
+
+  <script>
+    /***************
+     * SCORE DATA
+     ***************/
+    const stats = {
+      team6: { correct: 0, wrong: 0, history: [] },
+      team7: { correct: 0, wrong: 0, history: [] }
+    };
+
+    function updateTotals() {
+      const total6 = stats.team6.correct;
+      const total7 = stats.team7.correct;
+      let leaderText = '(Tied)';
+
+      if (total6 > total7) {
+        leaderText = '→ 6 is leading';
+      } else if (total7 > total6) {
+        leaderText = '→ 7 is leading';
+      }
+
+      const totalsEl = document.getElementById('totals-display');
+      totalsEl.textContent =
+        `Total correct so far – 6: ${total6} | 7: ${total7} ${leaderText}`;
+    }
+
+    function updateTeamBars() {
+      ['team6', 'team7'].forEach(team => {
+        const total = stats[team].correct + stats[team].wrong;
+        let correctPct = 0;
+        let wrongPct   = 0;
+
+        if (total > 0) {
+          correctPct = (stats[team].correct / total) * 100;
+          wrongPct   = (stats[team].wrong   / total) * 100;
+        }
+
+        document.getElementById(team + '-correct-bar').style.height = correctPct + '%';
+        document.getElementById(team + '-wrong-bar').style.height   = wrongPct + '%';
+      });
+    }
+
+    function updateDisplay() {
+      updateTotals();
+      updateTeamBars();
+    }
+
+    /***************
+     * CONFETTI
+     ***************/
+    function launchConfetti() {
+      if (typeof confetti !== 'function') return;
+
+      confetti({
+        particleCount: 150,
+        spread: 80,
+        origin: { y: 0.6 }
+      });
+
+      setTimeout(() => {
+        confetti({
+          particleCount: 80,
+          spread: 120,
+          angle: 60,
+          origin: { x: 0 }
+        });
+        confetti({
+          particleCount: 80,
+          spread: 120,
+          angle: 120,
+          origin: { x: 1 }
+        });
+      }, 250);
+    }
+
+    /***************
+     * BUTTON LOGIC
+     ***************/
+    function recordAnswer(team, isCorrect) {
+      const emojiEl = document.getElementById(team + '-emoji');
+      stats[team].history.push(isCorrect ? 'correct' : 'wrong');
+
+      if (isCorrect) {
+        stats[team].correct += 1;
+        emojiEl.src = 'teacher-happy.jpg';
+        const clap = document.getElementById('clap-sound');
+        clap && clap.play();
+        launchConfetti();
+      } else {
+        stats[team].wrong += 1;
+        emojiEl.src = 'teacher-thoughtful.jpg';
+        const wrong = document.getElementById('wrong-sound');
+        wrong && wrong.play();
+      }
+
+      document.getElementById(team + '-correct').textContent = stats[team].correct;
+      document.getElementById(team + '-wrong').textContent   = stats[team].wrong;
+      updateDisplay();
+    }
+
+    function undoLast(team) {
+      const last = stats[team].history.pop();
+      if (!last) return;
+
+      if (last === 'correct' && stats[team].correct > 0) stats[team].correct -= 1;
+      if (last === 'wrong'   && stats[team].wrong   > 0) stats[team].wrong   -= 1;
+
+      document.getElementById(team + '-correct').textContent = stats[team].correct;
+      document.getElementById(team + '-wrong').textContent   = stats[team].wrong;
+      document.getElementById(team + '-emoji').src           = 'teacher-happy.jpg';
+      updateDisplay();
+    }
+
+    function resetScoreboard() {
+      for (let team of ['team6', 'team7']) {
+        stats[team].correct = 0;
+        stats[team].wrong   = 0;
+        stats[team].history = [];
+        document.getElementById(team + '-emoji').src           = 'teacher-happy.jpg';
+        document.getElementById(team + '-correct').textContent = 0;
+        document.getElementById(team + '-wrong').textContent   = 0;
+      }
+      updateDisplay();
+    }
+
+    /***************
+     * QUESTIONS (your list)
+     ***************/
+    const questions = [
+      {
+        text: "What’s Canada’s national animal?",
+        options: ["Moose", "Beaver", "Polar Bear", "Goose with attitude"]
+      },
+      {
+        text: "What new technology helps cars drive by themselves?",
+        options: ["Auto-pilot / AI", "Magic", "Remote control", "Invisible driver"]
+      },
+      {
+        text: "Which planet do people keep saying humans might live on next?",
+        options: ["Venus", "Mars", "Pluto", "Earth 2.0"]
+      },
+      {
+        text: "What’s recycling an example of?",
+        options: ["Wasting stuff", "Caring for the planet ♻️", "Magic", "Science fiction"]
+      },
+      {
+        text: "You have 5 cookies and 2 friends. What’s the fair way to share?",
+        options: [
+          "Eat all 5 before they see you",
+          "1 each, 3 for you 😏",
+          "1 each and share the last 3 equally",
+          "Just give them all to Miss Howes"
+        ]
+      },
+      {
+        text: "If your tablet’s battery is at 2%, what should you do?",
+        options: ["Panic", "Plug it in", "Blame your sibling", "Yell “Power up!”"]
+      },
+      {
+        text: "What’s the main source of energy for Earth?",
+        options: ["Moon", "Sun", "Coffee", "Wi-Fi"]
+      },
+      {
+        text: "What gas do humans breathe in?",
+        options: ["Carbon dioxide", "Oxygen", "Laughing gas", "Helium (if you wanna sound funny)"]
+      },
+      {
+        text: "A triangle has 3 sides. How many sides does a circle have?",
+        options: ["0", "1", "2", "Infinite vibes"]
+      },
+      {
+        text: "What’s the largest mammal on Earth?",
+        options: ["Elephant", "Blue Whale", "A really full school bus", "Giraffe"]
+      },
+      {
+        text: "Which planet has rings?",
+        options: ["Mercury", "Saturn", "Pizza Planet", "Mars"]
+      },
+      {
+        text: "Why did the math book look sad?",
+        options: []  // joke question
+      }
+    ];
+
+    let currentQuestionIndex = 0;
+    let selectedOptionIndex = null;
+
+    function renderQuestion() {
+      const q = questions[currentQuestionIndex];
+      const qTextEl = document.getElementById('question-text');
+      const optionsEl = document.getElementById('options-container');
+
+      selectedOptionIndex = null; // reset selection on new question
+
+      qTextEl.textContent = (currentQuestionIndex + 1) + ". " + q.text;
+      optionsEl.innerHTML = "";
+
+      if (!q.options || q.options.length === 0) {
+        // Just the question (joke), no options
+        return;
+      }
+
+      const labels = ["A", "B", "C", "D"];
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.type = "button";
+        btn.className = "option-btn";
+        btn.innerHTML = `<span class="option-label">${labels[idx]}.</span> ${opt}`;
+        btn.onclick = () => selectOption(idx);
+        optionsEl.appendChild(btn);
+      });
+    }
+
+    function selectOption(idx) {
+      selectedOptionIndex = idx;
+      const buttons = document.querySelectorAll('.option-btn');
+      buttons.forEach((btn, i) => {
+        if (i === idx) {
+          btn.classList.add('selected');
+        } else {
+          btn.classList.remove('selected');
+        }
+      });
+    }
+
+    function nextQuestion() {
+      currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
+      renderQuestion();
+    }
+
+    // Initialize on first load
+    updateDisplay();
+    renderQuestion();
+  </script>
+</body>
+</html>
